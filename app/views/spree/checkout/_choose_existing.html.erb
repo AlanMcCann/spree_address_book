@@ -1,17 +1,26 @@
+<% 
+  selected_id = nil
+  if @order.send("#{address_type}_address_id")
+    selected_id = @order.send("#{address_type}_address_id")
+  elsif @order.send("#{address_type}_address") && !@order.send("#{address_type}_address").empty?
+    selected_id = 0
+  end
+%>
 <% @addresses = current_user ? current_user.addresses : [] %>
 <% if @addresses.present? %>
 <div class="select_address">
   <p class="field">    
     <% @addresses.each_with_index do |address, idx| %>
-      <span id="<%= dom_id(address) %>">
+      <span id="<%= "#{address_type}_#{dom_id(address)}" %>">
         <label>
-          <%= radio_button_tag "order[#{address_type}_address_id]", address.id, (idx == 0) %>
+          <% selected = (selected_id.nil? && idx == 0) || (address.id == selected_id)%>
+          <%= radio_button_tag "order[#{address_type}_address_id]", address.id, selected %>
           <%= address %>
         </label>
         <%= link_to t(:edit), edit_address_path(address) %><br />
       </span>
     <% end %>
-    <label><%= radio_button_tag "order[#{address_type}_address_id]", 0 %> <%= t('other_address') %></label>
+    <label><%= radio_button_tag "order[#{address_type}_address_id]", 0, selected_id == 0 %> <%= t('other_address') %></label>
   </p>
 </div>
 <% end %>
