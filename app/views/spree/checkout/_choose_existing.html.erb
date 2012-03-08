@@ -6,21 +6,28 @@
     selected_id = 0
   end
 %>
-<% @addresses = current_user ? current_user.addresses : [] %>
+<% @addresses = current_user ? current_user.addresses.includes(:state, :country) : [] %>
 <% if @addresses.present? %>
 <div class="select_address">
-  <p class="field">    
+  <div class="addresses">    
     <% @addresses.each_with_index do |address, idx| %>
-      <span id="<%= "#{address_type}_#{dom_id(address)}" %>">
+      <span id="<%= "#{address_type}_#{dom_id(address)}" %>" class="address_option">
         <label>
           <% selected = (selected_id.nil? && idx == 0) || (address.id == selected_id)%>
           <%= radio_button_tag "order[#{address_type}_address_id]", address.id, selected %>
-          <%= address %>
+          <span class="name"><%= address.full_name %></span>
+          <span class="street"><%= address.address1 %></span>
+          <% if address.address2? %>
+            <span class="street2"><%= address.address2 %></span>
+          <% end %>
+          <span class="city_state">
+            <%= address.city %>, <%= address.state_text %>, <%= address.country.iso %> <%= address.zipcode %> 
+          </span>
         </label>
-        <%= link_to t(:edit), edit_address_path(address) %><br />
+        <span class="address_edit_link"><%= link_to t(:edit), edit_address_path(address) %></span>
       </span>
     <% end %>
     <label><%= radio_button_tag "order[#{address_type}_address_id]", 0, selected_id == 0 %> <%= t('other_address') %></label>
-  </p>
+  </div>
 </div>
 <% end %>
