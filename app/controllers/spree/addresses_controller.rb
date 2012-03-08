@@ -23,11 +23,7 @@ class Spree::AddressesController < Spree::BaseController
   end
 
   def destroy
-    if @address.can_be_deleted?
-      @address.destroy
-    else
-      @address.update_attribute(:deleted_at, Time.now)
-    end
+    @address.destroy_or_save
     flash[:notice] = I18n.t(:successfully_removed,
       :resource => I18n.t(:address))
     redirect_to(request.env['HTTP_REFERER'] || account_path) unless request.xhr?

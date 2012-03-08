@@ -7,7 +7,10 @@ Spree::CheckoutController.class_eval do
   def set_addresses
     return unless params[:order] && params[:state] == "address"
 
-    if params[:order][:ship_address_id].to_i > 0
+    if params[:order][:use_billing].to_i > 0
+      params[:order].delete(:ship_address_id)
+      params[:order].delete(:ship_address_attributes)
+    elsif params[:order][:ship_address_id].to_i > 0
       params[:order].delete(:ship_address_attributes)
     else
       params[:order].delete(:ship_address_id)
@@ -22,16 +25,15 @@ Spree::CheckoutController.class_eval do
 
   def normalize_addresses
     return unless params[:state] == "address" && @order.bill_address_id && @order.ship_address_id
-    @order.bill_address.reload
-    @order.ship_address.reload
+    @order.reload
     # ensure that there is no validation errors and addresses was
     # saved
-
     return unless @order.bill_address && @order.ship_address
 
     if @order.bill_address_id != @order.ship_address_id && @order.bill_address.same_as?(@order.ship_address)
-      @order.bill_address.destroy
-      @order.update_attribute(:bill_address_id, @order.ship_address.id)
+      billing_address = @order.bill_address
+      result = @order.update_attribute(:bill_address_id, @order.ship_address.id)
+      billing_address.destroy_or_save unless billing_address.used?(@order)
     else
       @order.bill_address.update_attribute(:user_id, current_user.try(:id))
     end

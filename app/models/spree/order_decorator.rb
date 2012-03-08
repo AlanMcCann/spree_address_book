@@ -2,12 +2,12 @@ Spree::Order.class_eval do
   attr_accessible :bill_address_id, :ship_address_id
 
   def bill_address_id=(id)
-    address = Spree::Address.find(id)
-    if address && address.user_id == self.user_id
-      self["bill_address_id"] = address.id
-      self.bill_address.reload
+    address = Spree::Address.find_by_id(id)
+    if address && address.user_id == user_id
+      write_attribute("bill_address_id", address.id)
+      bill_address.reload
     else
-      self["bill_address_id"] = nil
+      write_attribute("bill_address_id", nil)
     end
   end
 
@@ -16,12 +16,12 @@ Spree::Order.class_eval do
   end
 
   def ship_address_id=(id)
-    address = Spree::Address.find(id)
-    if address && address.user_id == self.user_id
-      self["ship_address_id"] = address.id
-      self.ship_address.reload
+    address = Spree::Address.find_by_id(id)
+    if address && address.user_id == user_id
+      write_attribute("ship_address_id", address.id)
+      ship_address.reload
     else
-      self["ship_address_id"] = nil
+      write_attribute("ship_address_id", nil)
     end
   end
 
@@ -35,7 +35,7 @@ Spree::Order.class_eval do
     address = nil
     if attributes[:id]
       address = Spree::Address.find(attributes[:id])
-      if address && address.editable?
+      if address && address.user_id == user_id && address.editable?
         address.update_attributes(attributes)
       else
         attributes.delete(:id)
@@ -43,11 +43,16 @@ Spree::Order.class_eval do
     end
 
     if !attributes[:id]
-      address = Spree::Address.new(attributes)
+      address = Spree::Address.new(attributes.merge(:user_id => user_id))
       address.save
     end
 
     address
+  end
+  
+  def clone_billing_address
+    self.ship_address = bill_address
+    true
   end
 
 end
