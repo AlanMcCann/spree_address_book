@@ -15,13 +15,15 @@
         <label>
           <% selected = (selected_id.nil? && idx == 0) || (address.id == selected_id)%>
           <%= radio_button_tag "order[#{address_type}_address_id]", address.id, selected %>
-          <span class="name"><%= address.full_name %></span>
-          <span class="street"><%= address.address1 %></span>
-          <% if address.address2? %>
-            <span class="street2"><%= address.address2 %></span>
-          <% end %>
-          <span class="city_state">
-            <%= address.city %>, <%= address.state_text %>, <%= address.country.iso %> <%= address.zipcode %> 
+          <span class="address_cont">
+            <span class="name"><%= address.full_name %></span>
+            <span class="street"><%= address.address1 %></span>
+            <% if address.address2? %>
+              <span class="street2"><%= address.address2 %></span>
+            <% end %>
+            <span class="city_state">
+              <%= address.city %>, <%= address.state_text %>, <%= address.country.iso %> <%= address.zipcode %> 
+            </span>
           </span>
         </label>
         <span class="address_edit_link"><%= link_to t(:edit), edit_address_path(address) %></span>
